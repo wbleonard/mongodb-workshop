@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>NYC Restaurants</title>
+  </head>
+  <body>
+    <h2>NYC Restaurant Finder</h2>
+    <p>
+      This simple page demonstrates how Stitch can host your application
+      front-end.
+    </p>
+
+    <form>
+      Restaurant name: <input type="text" id="name" name="name">
+    </form>
+
+    <button type="submit" onclick="userAction()">Search</button>
+
+    <p id="table"></p>
+
+    <script>
+      
+      const userAction = async () => {
+        var txt
+
+        var searchString = document.getElementById("name").value
+        url = "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/restaurants-idwkf/service/getRestaurantsByName/incoming_webhook/restaurants?arg=" + searchString
+        console.log(url)
+
+        const response = await fetch(url);
+        const myJson = await response.json(); //extract JSON from the http response
+        console.log(myJson);
+      
+        txt = "<table border='1'>";
+        for (x in myJson) {
+          txt +="<tr>"
+          txt += "<td>" + myJson[x].name + "</td>";
+          txt += "<td>" + myJson[x].cuisine + "</td>";
+          txt += "<td>" + myJson[x].borough + "</td>";
+          txt += "<tr>"
+        }
+        txt += "</table>"
+
+        document.getElementById("table").innerHTML = txt;
+        
+      };
+    </script>
+  </body>
+</html>
