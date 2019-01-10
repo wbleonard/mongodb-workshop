@@ -17,7 +17,7 @@
 
     <button type="submit" onclick="userAction()">Search</button>
 
-    <p id="table"></p>
+    <p id="results"></p>
 
     <script>
       
@@ -25,24 +25,19 @@
         var txt
 
         var searchString = document.getElementById("name").value
-        url = "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/restaurants-idwkf/service/getRestaurantsByName/incoming_webhook/restaurants?arg=" + searchString
+	webhook_url = "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-lhvdy/service/restaurants/incoming_webhook/getRestaurantsByName"
+        url = webhook_url + "?arg=" + searchString
         console.log(url)
 
         const response = await fetch(url);
         const myJson = await response.json(); //extract JSON from the http response
         console.log(myJson);
+        
+          txt = myJson.name + "<br>"
+          txt += myJson.address.building + " " + myJson.address.street + "<br>"
+          txt += myJson.borough + "<br>"
       
-        txt = "<table border='1'>";
-        for (x in myJson) {
-          txt +="<tr>"
-          txt += "<td>" + myJson[x].name + "</td>";
-          txt += "<td>" + myJson[x].cuisine + "</td>";
-          txt += "<td>" + myJson[x].borough + "</td>";
-          txt += "<tr>"
-        }
-        txt += "</table>"
-
-        document.getElementById("table").innerHTML = txt;
+        document.getElementById("results").innerHTML = txt;
         
       };
     </script>
