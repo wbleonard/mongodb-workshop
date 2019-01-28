@@ -26,13 +26,12 @@
 
       <button type="submit" onclick="userAction()">Search</button>
 
-      </p>
       <p id="results"></p>
     </div>
 
     <script>
       const userAction = async () => {
-        var txt;
+        var txt = "";
 
         var searchString = document.getElementById("name").value;
         webhook_url =
@@ -44,9 +43,14 @@
         const myJson = await response.json(); //extract JSON from the http response
         console.log(myJson);
 
-        txt = myJson.name + "<br>";
-        txt += myJson.address.building + " " + myJson.address.street + "<br>";
-        txt += myJson.borough + "<br>";
+        if (myJson.address != undefined) {
+          // We found a restaurant
+          txt += myJson.name + "<br>";
+          txt += myJson.address.building + " " + myJson.address.street + "<br>";
+          txt += myJson.borough + "<br>";
+        } else {
+          txt = "No information available for restaurant " + searchString;
+        }
 
         document.getElementById("results").innerHTML = txt;
       };

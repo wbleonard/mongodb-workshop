@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>NYC Restaurants</title>
+    <title>Add Restaurants</title>
     <!-- Latest compiled and minified CSS -->
     <link
       rel="stylesheet"
@@ -44,7 +44,7 @@
 
         var searchString = document.getElementById("name").value;
         webhook_url =
-          "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-xoeos/service/AddRestaurant/incoming_webhook/addRestaurant";
+          "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-xoeos/service/AddNewRestaurant/incoming_webhook/addNewRestaurant";
         url = webhook_url + "?arg=" + searchString;
         console.log(url);
 
