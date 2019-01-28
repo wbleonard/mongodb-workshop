@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>NYC Restaurants</title>
+    <!-- Latest compiled and minified CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
+    />
+  </head>
+  <style>
+    div {
+      margin-left: 40px;
+    }
+  </style>
+  <body>
+    <div>
+      <h2>Add A New Restaurant</h2>
+      <p>
+        This page demonstrates how you can easily
+        <a
+          href="https://docs.mongodb.com/stitch/getting-started/integrate-third-party-services/"
+          target="_blank"
+          >Integrate Third-Party Services</a
+        >. In our case, we are calling the
+        <a
+          href="https://azure.microsoft.com/en-us/services/cognitive-services/"
+          target="_blank"
+          >Azure Cognitive Services</a
+        >
+        to enrich our restaurant data.
+      </p>
+      <form>Restaurant name: <input type="text" id="name" name="name" /></form>
+
+      <button type="submit" onclick="userAction()">Add</button>
+
+      <p id="results"></p>
+    </div>
+
+    <script>
+      const userAction = async () => {
+        var txt;
+
+        var searchString = document.getElementById("name").value;
+        webhook_url =
+          "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-xoeos/service/AddRestaurant/incoming_webhook/addRestaurant";
+        url = webhook_url + "?arg=" + searchString;
+        console.log(url);
+
+        const response = await fetch(url);
+        const myJson = await response.json(); //extract JSON from the http response
+        console.log(myJson);
+
+        txt =
+          "The following restaurant has been added to the database. The health inspector has been alerted.<br><br>";
+
+        if (myJson.address != undefined) {
+          // We found a restaurant
+          txt += myJson.name + "<br>";
+          txt +=
+            myJson.address.addressLocality +
+            " " +
+            myJson.address.addressRegion +
+            ",  " +
+            myJson.address.postalCode +
+            "<br>";
+          txt += myJson.telephone + "<br>";
+          txt += myJson.url;
+        } else {
+          txt = "No information available for restaurant " + searchString;
+        }
+
+        document.getElementById("results").innerHTML = txt;
+        document.getElementById("name").value = "";
+      };
+    </script>
+  </body>
+</html>

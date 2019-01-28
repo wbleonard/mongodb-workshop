@@ -3,42 +3,52 @@
   <head>
     <meta charset="UTF-8" />
     <title>NYC Restaurants</title>
+    <!-- Let's use Bootstrap improve the default look a bit -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
+    />
   </head>
+  <style>
+    div {
+      margin-left: 40px;
+    }
+  </style>
   <body>
-    <h2>NYC Restaurant Finder</h2>
-    <p>
-      This simple page demonstrates how Stitch can host your application
-      front-end.
-    </p>
+    <div>
+      <h2>NYC Restaurant Finder</h2>
+      <p>
+        This simple page demonstrates how MongoDB Stitch can <a href="https://docs.mongodb.com/stitch/hosting/" target="_blank">host</a> your application
+        front-end.
+      </p>
 
-    <form>
-      Restaurant name: <input type="text" id="name" name="name">
-    </form>
+      <form>Restaurant name: <input type="text" id="name" name="name" /></form>
 
-    <button type="submit" onclick="userAction()">Search</button>
+      <button type="submit" onclick="userAction()">Search</button>
 
-    <p id="results"></p>
+      </p>
+      <p id="results"></p>
+    </div>
 
     <script>
-      
       const userAction = async () => {
-        var txt
+        var txt;
 
-        var searchString = document.getElementById("name").value
-	webhook_url = "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-lhvdy/service/restaurants/incoming_webhook/getRestaurantsByName"
-        url = webhook_url + "?arg=" + searchString
-        console.log(url)
+        var searchString = document.getElementById("name").value;
+        webhook_url =
+          "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-lhvdy/service/restaurants/incoming_webhook/getRestaurantsByName";
+        url = webhook_url + "?arg=" + searchString;
+        console.log(url);
 
         const response = await fetch(url);
         const myJson = await response.json(); //extract JSON from the http response
         console.log(myJson);
-        
-          txt = myJson.name + "<br>"
-          txt += myJson.address.building + " " + myJson.address.street + "<br>"
-          txt += myJson.borough + "<br>"
-      
+
+        txt = myJson.name + "<br>";
+        txt += myJson.address.building + " " + myJson.address.street + "<br>";
+        txt += myJson.borough + "<br>";
+
         document.getElementById("results").innerHTML = txt;
-        
       };
     </script>
   </body>
