@@ -122,12 +122,15 @@ NYC Restaurant Finder
       txt += `<span class="span">  <div class="container">`;
       var cnt=0;
       // display results grid
+      console.log( JSON.stringify( myJson ));
       if( myJson.length > 0 ) {
         myJson.forEach(function(obj) {
-
-          var shortAddr = (obj.address.building + ' ' + obj.address.street);
-          var lat=obj.address.coord[1].$numberDouble;
-          var lon=obj.address.coord[0].$numberDouble;
+          if( obj.address == undefined ) {
+            obj.address = { building:"", street:"", coord:[{'$numberDouble':-74.0776219},{'$numberDouble':40.6381582}] };
+          }
+          var shortAddr = obj.address.building + ' ' + obj.address.street;
+          var lat = obj.address.coord[1].$numberDouble;
+          var lon = obj.address.coord[0].$numberDouble;
 
           // get thumbnail of bingmap by passing in coordinates, and API key
           var bingMap = `https://dev.virtualearth.net/REST/v1/Imagery/Map/Road/${lat},${lon}/13?mapSize=128,128&format=png&key=${BING_MAP_KEY}&pushpin=${lat},${lon};37`;
