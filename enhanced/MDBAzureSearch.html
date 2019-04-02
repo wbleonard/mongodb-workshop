@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <meta name="description" content=""/>
+  <meta name="author" content=""/>
+
+  <script>
+    var client;
+    var db;
+
+    //
+    // replace your BING MAP KEY, STITCH APP ID, and DB name (if different) here
+    //
+    var STITCH_APP_ID='workshop-byhri';
+    var DB='Workshop';
+    var SERVICE_NAME='mongodb-atlas';
+    var BING_MAP_KEY='AhryDsQ1cV2lEHkigjkTLQFdgnVPbdfqWSRjdRQqxYAfsY0f7yseHyY0OrITBGQ8';
+  </script>
+
+  <link rel="icon" href="https://www.clipartmax.com/png/middle/114-1147615_mongodb-leaf-open-source-nosql-database-startups-mongodb-logo.png"/>
+  <!-- some stylesheet stuff to make it cleaner and help the Search spinner to spin -->
+  <style>
+    body {
+      min-height: 75rem;
+      padding-top: 4.5rem;
+      padding-left: 10px;
+    }
+    .row {
+      padding-bottom: 5px;
+    }
+
+    .spinner {
+      display: inline-block;
+      opacity: 0;
+      max-width: 0;
+      -webkit-transition: opacity 0.25s, max-width 0.45s;
+      -moz-transition: opacity 0.25s, max-width 0.45s;
+      -o-transition: opacity 0.25s, max-width 0.45s;
+      transition: opacity 0.25s, max-width 0.45s;
+    }
+    .has-spinner.active {
+      cursor:progress;
+    }
+    .has-spinner.active .spinner {
+      opacity: 1;
+      padding-right: 10px;
+      max-width: 50px;
+    }
+  </style>
+
+  <title>NYC Restaurants</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" />
+
+  <!-- Font Awesome JS -->
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js"></script>
+</head>
+
+<body>
+  <!-- dark grey collapsed nav bar fixe to top of page -->
+  <nav class="navbar navbar-dark fixed-top bg-dark" style="float:left">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <!-- collapsable menu with hamburger stack -->
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link navbar-text navbar-brand" href="https://cloud.mongodb.com/v2">
+            Atlas <span class="sr-only">(current)</span></a>
+        </li>
+      </ul>
+    </div>
+    <a class="navbar-brand navbar-text text-light mr-auto ml-4" style="float:inherit">
+NYC Restaurant Finder
+     </a>
+    <form class="form-inline mt-2 mt-md-0">
+      <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="name">
+    </form>
+    <button id="bar_button" class="btn btn-outline-success has-spinner" type="submit" onsubmit="userAction()" onclick="userAction()" >
+      <span class="spinner"><i class="fa fa-refresh fa-spin"></i></span>Search
+    </button>
+ </nav>
+  <main role="main">
+    <div class="card w-99" id="instructions">
+      <div class="card-body">
+      <p class="card-text">
+
+      This simple page demonstrates how to combine <a href="https://docs.mongodb.com/stitch/" target="_blank">Stitch</a> functions, MongoDB queries,
+      and Azure services along with some <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a> to make it more attractive.
+      We will find matches in our Restaurant collection,
+      then add a thumbnail for each match from <a href="https://www.bingmapsportal.com/" target="_blank">Bing Maps</a> to our grid results.
+      The thumbnail will trigger a <a href="https://docs.mongodb.com/stitch/getting-started/configure-rules-based-access-to-mongodb/" target="_blank">QueryAnywhere</a> call to find other near-by restaurants,
+      and add them as pins to a larger Bing map.
+    </p>
+    <p><strong>Use the <a href="#name">Search</a> box above to type a restaurant name or even a regular expression.</strong></p>
+    </div>
+  </div>
+    <div class="container-fluid" style="border:1px solid #cecece;" id="results"><p/>
+    </div>
+  </main>
+
+  <script >
+    const userAction = async () => {
+      // turn on spinner
+      $('div#instructions').hide();
+      $('.has-spinner').toggleClass('active');
+      var searchString = document.getElementById("name").value;
+      if( searchString ) { document.getElementById("results").innerHTML = "<h1>Searching...</h1>"; }
+
+      // our stitch function to get restaurant docs and Azure Entity search information
+      webhook_url = `https://webhooks.mongodb-stitch.com/api/client/v2.0/app/${STITCH_APP_ID}/service/restaurants/incoming_webhook/getEnhancedRestaurantsByName`;
+      url = webhook_url + "?arg=" + searchString;
+      const response = await fetch(url).catch( err => console.error("Fetch error:", err));
+      const myJson = await response.json(); //extract JSON from the http response
+      // got results
+      // turn off spinner
+      $('.has-spinner').toggleClass('active'); //{
+      var txt = '<p>';
+      txt += `<span class="span">  <div class="container">`;
+      var cnt=0;
+      // display results grid
+      console.log( JSON.stringify( myJson ));
+      if( myJson.length > 0 ) {
+        myJson.forEach(function(obj) {
+          if( obj.address == undefined ) {
+            obj.address = { building:"", street:"", coord:[{'$numberDouble':-74.0776219},{'$numberDouble':40.6381582}] };
+          }
+          var shortAddr = obj.address.building + ' ' + obj.address.street;
+          var lat = obj.address.coord[1].$numberDouble;
+          var lon = obj.address.coord[0].$numberDouble;
+
+          // get thumbnail of bingmap by passing in coordinates, and API key
+          var bingMap = `https://dev.virtualearth.net/REST/v1/Imagery/Map/Road/${lat},${lon}/13?mapSize=128,128&format=png&key=${BING_MAP_KEY}&pushpin=${lat},${lon};37`;
+          var bingSearch = ( obj.bingEntityInfo || {} ).webSearchUrl;
+
+          // if we don't get Bing results, link to current position on page
+          if( bingSearch == null || bingSearch==="" ) { bingSearch = "#"; }
+
+          // start a new row every 3 items
+          if (cnt % 3 == 0 && cnt > 0 ) { txt+='</div>'; }
+          if (cnt % 3 == 0 ) { txt+='<div class="row border-top border-success">'; } //style="border-top: 1px solid;"
+
+          // each item is a colunn in the grid containing a table for each restaurant
+          txt += `\n<div class="col-sm-4"><table class="table table-hover table-condensed" ><tbody>`;
+          txt += `<tr><td id=\"${obj.name}\"><img title="${obj.name}" src="${bingMap}" height="48" width="48" onclick="getNearbyLocations( event, ${lon}, ${lat} )" class="thumbnail" data-toggle="collapse" data-target="#coll${cnt}" role="button" aria-expanded="false" aria-controls="collEx" />
+                  <div class="collapse" id="coll${cnt}">
+                    <div class="card card-body" id=\"bigmap\">
+                    </div>
+                  </div></td><td><a target="_blank" href="${bingSearch}">${obj.name}</a></td></tr>`;
+          txt += `<tr><td>Address</td><td>${shortAddr}</td></tr>`;
+          txt += `<tr><td>Borough</td><td>${obj.borough}, ${obj.address.zipcode}</td></tr>`;
+          txt += `</tbody></table></div>`;
+          cnt++;
+        } );
+        // if we have an incomplete row at the end, close off the row tag
+        if( cnt % 3 != 0 ) { txt += `</div>`; }
+      } else {
+        console.log( "No results" );
+        txt += "<h2>No matching results</h2>";
+      }
+      txt += '</div></span>'
+      // update the page using the 'results' div
+      document.getElementById("results").innerHTML = txt;
+    };
+  </script>
+
+  <!-- Stitch API -->
+  <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.2.0/stitch.js"></script>
+
+  <!-- Stitch QueryAnywhere -->
+  <script>
+  // connect to Stitch and get reference to our Workshop database
+  // SERVICE_NAME should be set at the top of this file to the
+  // Workshop APP ID on the Stitch web page
+  startStitch = function() {
+    if( !client )
+      client = stitch.Stitch.initializeDefaultAppClient( STITCH_APP_ID );
+
+      db = client.getServiceClient(stitch.RemoteMongoClient.factory, SERVICE_NAME ).db( DB );
+
+      user = client.auth.loginWithCredential(new stitch.AnonymousCredential());
+
+    return db;
+  }
+  </script>
+
+  <script>
+  // initialize Stitch when browser window is loaded
+  window.onload = async function() {
+    if( /*STITCH_APP_ID==='PASTE STITCH APP ID HERE' ||*/
+        STITCH_APP_ID==='workshop-byhri' ) {
+      alert(`Please update the STITCH_APP_ID [${STITCH_APP_ID}] value
+      in the HTML source file with the one from your Stitch application.`);
+      return;
+    }
+    console.log( "Connecting to Atlas..." );
+    try {
+      db = await startStitch();
+    } catch(err) { console.error( err ); }
+  }
+
+  // function to retrieve a larger Bing map with pushpins added from MongoDB geo-query
+  async function getNearbyLocations( event, lon, lat ) {
+    console.log( `getNearbyLocations: ${lon}, ${lat}` );
+    var bingMap = `https://dev.virtualearth.net/REST/v1/Imagery/Map/Road?&key=${BING_MAP_KEY}&mapSize=256,256&format=png&pushpin=${lat},${lon};37`;
+    const db = startStitch();
+    const coll = db.collection("Restaurants");
+    // find nearby restaurants in our collection, limit to top 10 results
+    const locations = await coll.find(
+      { 'address.coord' : { $geoWithin: { $centerSphere: [ [ lon, lat ], 0.000012 ] }}}, {limit:10}
+    ).asArray();
+    // add each nearby restaurant as a pushpin to the Bing map API call
+    locations.map( location => {
+      const coord = location.address.coord;
+      // generate three character labels for the pushpins
+      const ppLabel = location.name.replace(/\s+/g,'').substr(0,3);
+      console.log( ppLabel, JSON.stringify( coord ) );
+      const lon = coord[0];
+      const lat = coord[1];
+      bingMap += `&pushpin=${lat},${lon};46;${ppLabel}`;
+    });
+    // use the click event location to find where to add our new map
+    var tag = event.target.parentNode;
+    tag.getElementsByTagName('div')[0].innerHTML = `<img src="${bingMap}"/>`;
+  }
+
+  </script>
+  <!-- Bootstrap core JavaScript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/js/bootstrap.min.js"></script>
+
+<!-- footer with MongoDB logo -->
+  <div class="ml-2 mb-2" style="position:fixed; left:0; bottom:0; width:100%;">
+    <a href="http://mongodb.com">
+      <!-- MongoDB Leaf -->
+      <img height="64" width="64" src="https://pbs.twimg.com/profile_images/1016355093569040386/Dehk33x-_400x400.jpg"/>
+    </a>
+  </div>
+</body>
+</html>
