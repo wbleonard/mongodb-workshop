@@ -43,8 +43,10 @@
         var txt;
 
         var searchString = document.getElementById("name").value;
+        
+        // Replace w/ your webhook URL
         webhook_url =
-          "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-xoeos/service/AddNewRestaurant/incoming_webhook/addNewRestaurant";
+          "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-zbula/service/AddNewRestaurant/incoming_webhook/addNewRestaurant";
         url = webhook_url + "?arg=" + searchString;
         console.log(url);
 
