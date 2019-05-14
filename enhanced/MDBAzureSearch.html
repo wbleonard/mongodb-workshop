@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +14,7 @@
     // replace your BING MAP KEY, STITCH APP ID, and DB name (if different) here
     //
     var STITCH_APP_ID='workshop-zbula';
-    // var STITCH_APP_ID='workshop-zbula';
+    // var STITCH_APP_ID='workshop-byhri';
     var DB='Workshop';
     var SERVICE_NAME='mongodb-atlas';
     var BING_MAP_KEY='AhryDsQ1cV2lEHkigjkTLQFdgnVPbdfqWSRjdRQqxYAfsY0f7yseHyY0OrITBGQ8';
@@ -93,6 +92,10 @@
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
           <a class="nav-link navbar-text navbar-brand navbar-dark" role="button" onclick="newRestaurant()">New Restaurant
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link navbar-text navbar-brand navbar-dark" role="button" href="https://stitch-statichosting-prod.s3.amazonaws.com/5c61f390599fdaf807f3ddbf/analytics.html">Analytics
           </a>
         </li>
       </ul>
@@ -218,7 +221,7 @@ NYC Restaurant Finder
   // Workshop APP ID on the Stitch web page
   const startStitch = function() {
     if( !client )
-      client = stitch.Stitch.initializeDefaultAppClient( STITCH_APP_ID );
+      client = stitch.Stitch.initializeDefaultAppClient( 'workshop-byhri' );
 
       db = client.getServiceClient(stitch.RemoteMongoClient.factory, SERVICE_NAME ).db( DB );
 
@@ -247,13 +250,15 @@ NYC Restaurant Finder
   const getNearbyLocations = async function ( event, lon, lat ) {
     console.log( `getNearbyLocations: ${lon}, ${lat}` );
     document.getElementById('themap').innerHTML = ``;
-    var bingMap = `https://dev.virtualearth.net/REST/v1/Imagery/Map/Road?&key=${BING_MAP_KEY}&mapSize=512,512&zoomLevel=17&format=png&pushpin=${lat},${lon};37`;
+    var bingMap = `https://dev.virtualearth.net/REST/v1/Imagery/Map/Road?${lat},${lon}&key=${BING_MAP_KEY}&mapSize=512,512&zoomLevel=16&format=png&pushpin=${lat},${lon};37`;
     const db = startStitch();
     const coll = db.collection("Restaurants");
     // find nearby restaurants in our collection, limit to top 20 results
-    const locations = await coll.find(
-      { 'address.coord' : { $geoWithin: { $centerSphere: [ [ lon, lat ], 0.000032 ] }}}, {limit:20}
-    ).asArray();
+    // var query = { };
+    var query = { 'address.coord' : { $geoWithin: { $centerSphere: [ [ lon, lat ], 0.000032 ] }}};
+    const promise = coll.find( query, { limit:20 } );
+    console.log( "Query executed: ", JSON.stringify( query ));
+    const locations = await promise.asArray();
     // add each nearby restaurant as a pushpin to the Bing map API call
     console.log( 'Nearby location count: ' + locations.length );
     locations.map( location => {
