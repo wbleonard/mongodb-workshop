@@ -8,6 +8,6 @@ This workshop is divided into several parts:
 * [Part 3 - Stitch](http://bit.ly/MongoWorkshopStitch), our serverless application platform, and 
 * [Part 4 - Charts](http://bit.ly/MongoWorkshopCharts), our data visualization tool
 
-Each part contains several lab exercises. Don’t worry about completing all lab exercises in this sitting. The free environment you create in this lab will be yours forever. 
+Each part contains several lab exercises. The free environment you create in this lab will be yours forever. 
 
 
