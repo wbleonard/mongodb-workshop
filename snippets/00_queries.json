@@ -1,0 +1,13 @@
+{"address.street": "Park Ave"}
+
+{"grades.grade": "C"}
+
+{"grades.grade": { $all : ["B", "C"] } }
+
+{"grades.grade": {$nin:["A", "B", "Not Yet Graded"]}}
+
+{"grades": { $size: 5 }}
+
+{"address.street": "Broadway", "name" : {$ne: ""} }
+
+{"name": "Starbucks Coffee"}
