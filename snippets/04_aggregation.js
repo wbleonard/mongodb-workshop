@@ -1,0 +1,12 @@
+[{
+    $group: {
+        _id: "$cuisine",
+        total: {
+            $sum: 1
+        }
+    }
+}, {
+    $sort: {
+        total: -1
+    }
+}]
