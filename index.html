@@ -37,8 +37,8 @@
 
         // Replace w/ your webhook URL
         webhook_url =
-	  "https://webhooks.mongodb-stitch.com/api/client/v2.0/app/workshop-vrdif/service/restaurants/incoming_webhook/getRestaurantsByName";
-        url = webhook_url + "?arg1=" + searchString;
+	  "https://us-east-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/restaurantsapp-doslw/service/restaurantsService/incoming_webhook/getRestaurantsByName";
+        url = webhook_url + "?name=" + searchString;
         console.log(url);
 
         const response = await fetch(url);
